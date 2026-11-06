@@ -1,14 +1,12 @@
 # Plant Moisture Monitor
 
-Arduino Uno project that reads an FC-28 resistive soil probe and shows the reading on a 16x2 I2C LCD and a 128x32 SSD1306 OLED.
+Example Arduino project using a resistive soil probe, a 16x2 I2C LCD, and an SSD1306 OLED.
 
 ## Documentation
 
-- [How the sensor works, analog and digital outputs, calibration, and displays](docs/soil-moisture-basics.md)
-- [Sensor principle figure](docs/figures/resistive-sensor.svg)
-- [Reading and display flow figure](docs/figures/reading-flow.svg)
+- [How resistive sensors work, AO vs DO, and calibration](docs/soil-moisture-basics.md)
 
-## Hardware and wiring
+## Wiring used by the example sketch
 
 | Signal | Arduino Uno R3 |
 |---|---|
@@ -18,19 +16,25 @@ Arduino Uno project that reads an FC-28 resistive soil probe and shows the readi
 | Display and sensor VCC | 5V, subject to module requirements |
 | GND | Common GND |
 
-The LCD backpack uses I2C address `0x27`. The SSD1306 OLED is 128x32 at address `0x3C`.
+These are the connections expected by the example sketch. Sensor boards and displays can use different pins, voltages, or addresses, so check their labels and instructions before connecting them.
+
+The displays share SDA and SCL. Their addresses let the Arduino tell them apart: `0x27` for the example LCD and `0x3C` for the example OLED.
 
 ## Build and upload
 
-Install the Arduino AVR core and the U8g2 and LiquidCrystal_I2C libraries, then run:
+With Arduino CLI, Uno board support, U8g2, and LiquidCrystal_I2C installed, find the board's port and build the sketch:
 
 ```sh
+arduino-cli board list
 arduino-cli compile --fqbn arduino:avr:uno soil_monitor
-arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno soil_monitor
 ```
 
-Change the serial port if the board appears at a different path.
+Use the port shown by the first command in place of `YOUR_PORT`:
 
-## Calibration values in this sketch
+```sh
+arduino-cli upload -p YOUR_PORT --fqbn arduino:avr:uno soil_monitor
+```
 
-`soil_monitor/soil_monitor.ino` currently maps raw ADC 1023 to dry air and 293 to the water measurement used during setup. These are project-specific reference readings, not universal FC-28 values. The displayed percentage is a relative estimate, not a laboratory measurement of water content.
+## Calibration
+
+Before relying on the displayed percentage, take readings with your own probe in dry soil and in the same soil after watering. Enter those readings as `RAW_DRY` and `RAW_WET` in `soil_monitor/soil_monitor.ino`. Sensor and soil readings vary, so the values in the sketch are starting points, not universal settings. The percentage is a relative estimate, not a direct measurement of water content.

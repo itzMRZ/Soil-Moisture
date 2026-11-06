@@ -1,59 +1,40 @@
-# How the soil moisture reading works
+# Resistive soil moisture sensors
 
-## The sensor in one minute
+A resistive probe has two metal tracks. Soil between them carries electricity. Damp soil often carries it more easily than dry soil, so the sensor module's output changes. Soil type, fertilizer, salts, and probe placement affect the reading too.
 
-The FC-28 probe has two exposed metal tracks. Soil between them forms part of an electrical path. Wetter soil often conducts electricity more easily, so the sensor module sees a change and turns it into an output voltage. Soil type, salts, fertilizer, and probe contact can also affect that reading.
+![Illustration comparing a resistive sensor module in wet and dry soil.](images/fc28-wet-dry-outputs.jpg)
 
-![Illustration of an FC-28 style probe and sensor module.](images/fc-28-module-guide.jpg)
+The voltage labels and board details in this illustration are examples, not specifications. Use your own module's pin labels and check its documentation before wiring it.
 
-This supplied illustration is a visual guide, not a verified schematic. Board layouts and component values vary between FC-28 versions and clones. Follow the labels on your own board before wiring it.
+## AO and DO
 
-![Concept diagram showing the soil between two probe tracks as part of the electrical path.](figures/resistive-sensor.svg)
+Many modules have two outputs. `AO` is the changing measurement: its voltage rises or falls as the sensor reading changes. An Arduino's `analogRead` function turns that voltage into a number. On an Uno the number runs from 0 to 1023; other boards may use a different range. For example, with a 5 V measuring range, 2.5 V reads about 512 on an Uno.
 
-## Analog and digital outputs
+`DO` is an on/off signal. A small screw on many modules sets the point where it switches between `HIGH` and `LOW`. A program could use it to turn on an LED when the soil crosses that point. It only says which side of the point the reading is on, not how wet the soil is. The HIGH/LOW direction can differ between modules. The example sketch uses `AO`; it does not need `DO`.
 
-Many FC-28 modules expose both `AO` and `DO`. They answer different questions:
+```mermaid
+flowchart LR
+    P[Probe in soil] --> M[Sensor module]
+    M -->|AO: changing voltage| A[Arduino analog input]
+    A --> R[Number, range depends on board]
+    R --> C[Compare with dry and wet readings]
+    C --> E[Estimated moisture level]
+    E --> D[Display or program action]
+    M -.->|DO: on/off signal| G[HIGH or LOW]
+```
 
-| Pin | What it gives you | Example |
-|---|---|---|
-| `AO` (analog out) | A changing voltage that represents the sensor reading. Connect it to an analog input such as Uno `A0`. | With a nominal 5 V ADC reference, 2.5 V reads about 512 out of 1023. This is only an example. |
-| `DO` (digital out) | One of two logic states, `HIGH` or `LOW`, when the reading crosses a threshold set with the module's small screw potentiometer. | A controller can use it to switch an indicator when the soil crosses the chosen threshold. It does not provide a percentage. |
+## Set the dry and wet points
 
-The threshold's direction and whether the active state is `HIGH` or `LOW` can vary by module. Test yours rather than assuming.
+A percentage from this kind of sensor is a comparison, not a direct measurement of water content. Pick two reference readings for your sensor: one in dry soil and one in the same soil after watering. Set the sketch's `RAW_DRY` and `RAW_WET` values to those readings. A reading halfway between them becomes about 50%. The values vary between sensors and soils, so there is no single pair that works for everyone.
 
-This project connects `AO` to `A0` and uses it for the displayed reading. It does not use `DO`.
+The sketch also assigns labels to percentage ranges. Those labels are just display text, not watering advice. Adjust the ranges to suit your project. The displayed minimum and maximum are the lowest and highest readings since the sketch started; they reset when the board restarts.
 
-## How this sketch turns a reading into a percentage
+## Probe care
 
-The Uno's analog-to-digital converter turns the voltage at `A0` into a raw number from 0 to 1023. The sketch maps its two configured reference readings to an estimated 0 to 100% scale, then chooses a label for the display.
+The exposed metal can corrode if it stays powered in wet soil. Remove the probe between readings when practical. If readings drift, inspect the tracks and take new dry and wet readings.
 
-![Flow from raw analog reading through calibration to the display.](figures/reading-flow.svg)
+## Further reading
 
-The current settings are `RAW_DRY = 1023` and `RAW_WET = 293`. For this module, lower raw readings mean wetter conditions. For example, raw `658` maps to about `50%` with these settings. The reported water readings were about 275 to 311, so 293 is a convenient midpoint, not a soil-specific measurement.
-
-This percentage is a relative estimate, not a universal measure of water content. For better results, record repeatable readings in the soil you will use, once dry and once thoroughly watered, then set `RAW_DRY` and `RAW_WET` to those readings. The dry reference must be greater than the wet reference in this sketch. Readings beyond the reference points are limited to 0% or 100%.
-
-## The six labels
-
-These are simple ranges in the code, not care rules that fit every plant:
-
-| Label | Estimated reading |
-|---|---:|
-| BONE DRY | below 10% |
-| DRY | 10% to 24% |
-| MOIST | 25% to 39% |
-| WET | 40% to 59% |
-| SOAKED | 60% to 79% |
-| FLOODED | 80% to 100% |
-
-`MIN` and `MAX` on the display are the lowest and highest raw readings seen since startup. They reset when the Arduino restarts.
-
-## A note on probe life
-
-The FC-28 is resistive and has exposed metal. Keeping it powered in wet soil can corrode the probe and change its readings. Remove it between measurements when practical, and recalibrate if readings drift. It is useful for rough comparisons, not precision irrigation control.
-
-## Learn more
-
-- [SparkFun Soil Moisture Sensor Hookup Guide](https://learn.sparkfun.com/tutorials/soil-moisture-sensor-hookup-guide) explains resistive sensing, analog readings, wiring, and calibration.
-- [Arduino analogRead reference](https://docs.arduino.cc/language-reference/en/functions/analog-io/analogRead/) explains how an analog voltage becomes a number.
-- [Arduino digitalRead reference](https://docs.arduino.cc/language-reference/en/functions/digital-io/digitalRead/) explains reading a digital `HIGH` or `LOW` state.
+- [SparkFun soil moisture sensor guide](https://learn.sparkfun.com/tutorials/soil-moisture-sensor-hookup-guide)
+- [Arduino analogRead reference](https://docs.arduino.cc/language-reference/en/functions/analog-io/analogRead/)
+- [Arduino digitalRead reference](https://docs.arduino.cc/language-reference/en/functions/digital-io/digitalRead/)

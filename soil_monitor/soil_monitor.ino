@@ -1,12 +1,9 @@
 /*
- * Soil moisture monitor
- *   FC-28 AO  -> A0
- *   16x2 LCD  -> PCF8574 @ 0x27, SDA=A4 SCL=A5
- *   SSD1306   -> 128x32, 0x3C, SDA=A4 SCL=A5
+ * Plant moisture monitor example for an Uno, FC-28, 16x2 I2C LCD,
+ * and SSD1306 128x32 OLED.
  *
- * Confirmed hardware:
- *   OLED controller = SSD1306, 128x32 (UNIVISION init)
- *   LCD backpack    = PCF8574 @ 0x27
+ * Wiring and calibration values below are example settings. Check your
+ * module labels and calibrate the sensor for your own soil.
  */
 #include <Wire.h>
 #include <U8g2lib.h>
@@ -15,9 +12,9 @@
 U8G2_SSD1306_128X32_UNIVISION_1_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-// Soil calibration (raw ADC): dry air ~1023, wet ~300.
+// Example Uno calibration points. Measure your own probe and soil.
 const int RAW_DRY = 1023;
-const int RAW_WET = 293;
+const int RAW_WET = 300;
 
 static void scanBus() {
   Serial.println("I2C_SCAN");
