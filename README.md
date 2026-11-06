@@ -1,58 +1,36 @@
 # Plant Moisture Monitor
 
-Arduino sketch for reading soil moisture with an FC-28 sensor and showing it on a 16x2 LCD and a 128x32 SSD1306 OLED.
+Arduino Uno project that reads an FC-28 resistive soil probe and shows the reading on a 16x2 I2C LCD and a 128x32 SSD1306 OLED.
 
-## How it works
+## Documentation
 
-The FC-28 probe measures soil moisture by electrical resistance between two electrodes.
+- [How the sensor works, analog and digital outputs, calibration, and displays](docs/soil-moisture-basics.md)
+- [Sensor principle figure](docs/figures/resistive-sensor.svg)
+- [Reading and display flow figure](docs/figures/reading-flow.svg)
 
-- Dry soil gives high resistance and a high ADC value
-- Wet soil gives low resistance and a low ADC value
+## Hardware and wiring
 
-The ADC reading is mapped to a 0-100% moisture value. Min and max raw values are tracked since boot.
-
-Learn more: [How soil moisture sensors work](https://learn.sparkfun.com/tutorials/soil-moisture-sensor-hookup-guide)
-
-## Wiring
-
-| Signal | Arduino |
+| Signal | Arduino Uno R3 |
 |---|---|
-| FC-28 AO | A0 |
-| SDA (LCD + OLED) | A4 |
-| SCL (LCD + OLED) | A5 |
-| VCC | 5V |
-| GND | GND (common) |
+| FC-28 analog output (AO) | A0 |
+| LCD and OLED SDA | A4 |
+| LCD and OLED SCL | A5 |
+| Display and sensor VCC | 5V, subject to module requirements |
+| GND | Common GND |
 
-## Addresses
+The LCD backpack uses I2C address `0x27`. The SSD1306 OLED is 128x32 at address `0x3C`.
 
-- LCD (PCF8574): 0x27
-- OLED (SSD1306): 0x3C, 128x32
+## Build and upload
 
-## Build / upload
+Install the Arduino AVR core and the U8g2 and LiquidCrystal_I2C libraries, then run:
 
-```bash
+```sh
 arduino-cli compile --fqbn arduino:avr:uno soil_monitor
-arduino-cli upload  -p /dev/ttyACM0 --fqbn arduino:avr:uno soil_monitor
+arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno soil_monitor
 ```
 
-Libraries: U8g2, LiquidCrystal I2C.
+Change the serial port if the board appears at a different path.
 
-## Calibration
+## Calibration values in this sketch
 
-Edit in soil_monitor/soil_monitor.ino:
-
-```cpp
-const int RAW_DRY = 1023;   // dry air
-const int RAW_WET = 293;    // measured in water
-```
-
-## Tiers
-
-| Tier | Moisture % |
-|---|---|
-| BONE DRY | < 10 |
-| DRY | 10-24 |
-| MOIST | 25-39 |
-| WET | 40-59 |
-| SOAKED | 60-79 |
-| FLOODED | >= 80 |
+`soil_monitor/soil_monitor.ino` currently maps raw ADC 1023 to dry air and 293 to the water measurement used during setup. These are project-specific reference readings, not universal FC-28 values. The displayed percentage is a relative estimate, not a laboratory measurement of water content.
