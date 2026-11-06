@@ -2,9 +2,13 @@
 
 A resistive probe has two metal tracks. Soil between them carries electricity. Damp soil often carries it more easily than dry soil, so the sensor module's output changes. Soil type, fertilizer, salts, and probe placement affect the reading too.
 
-![Illustration comparing a resistive sensor module in wet and dry soil.](images/fc28-wet-dry-outputs.jpg)
+![A soil probe and example FC-28 style module with labeled parts.](images/fc28-module-overview.jpg)
 
-The voltage labels and board details in this illustration are examples, not specifications. Use your own module's pin labels and check its documentation before wiring it.
+This overview is illustrative. Pin order, component labels, and values can differ between boards. Check your module before wiring it.
+
+![An example comparison of wet and dry soil with analog and digital outputs.](images/fc28-wet-dry-outputs.jpg)
+
+The voltage numbers are examples, not specifications. The digital trace shows the output changing between two states, not a continuous moisture reading.
 
 ## AO and DO
 
